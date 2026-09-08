@@ -1,0 +1,25 @@
+environment	tool	version	version_source	conda_package	executable	executable_sha256	status
+fastp	fastp	fastp 1.3.4	runtime CLI; Conda package 1.3.4	fastp			OK_RUNTIME
+bwasam_snake	BWA	bwa 0.7.19-r1273	runtime CLI; Conda package 0.7.19	bwa			OK_RUNTIME
+bwasam_snake	SAMtools	samtools 1.23	runtime CLI; Conda package 1.23	samtools			OK_RUNTIME
+bwasam_snake	BCFtools	bcftools 1.23	runtime CLI; Conda package 1.23	bcftools			OK_RUNTIME
+bwasam_snake	Snakemake	9.16.2	runtime CLI; Conda package 9.16.2	snakemake			OK_RUNTIME
+bwasam_snake	GenMap	GenMap version: 1.3.0	runtime CLI; Conda package 1.3.0	genmap			OK_RUNTIME
+bwasam_snake	BEDTools	bedtools v2.31.1	runtime CLI; Conda package 2.31.1	bedtools			OK_RUNTIME
+mosdepth	mosdepth	mosdepth 0.3.13	runtime CLI; Conda package 0.3.13	mosdepth			OK_RUNTIME
+mosdepth	SAMtools	samtools 1.23	runtime CLI; Conda package 1.23	samtools			OK_RUNTIME
+hetero_kmer	FastK	1.2	Conda package metadata	fastk			OK_CONDA
+hetero_kmer	Histex	1.2	Conda package metadata	fastk			OK_CONDA
+hetero_kmer	GenomeScope2	not found		genomescope2			TOOL_MISSING
+hetero_kmer	Smudgeplot	Running smudgeplot v0.5.4	runtime CLI; Conda package 0.5.4	smudgeplot			OK_RUNTIME
+hetero_kmer	R	Rscript (R) version 4.4.3 (2025-02-28)	runtime CLI; Conda package 4.4.3	r-base			OK_RUNTIME
+stringmlst	stringMLST	0.6.3	Conda package metadata	stringmlst			OK_CONDA
+stringmlst	Python	Python 3.12.12	runtime CLI; Conda package 3.12.12	python			OK_RUNTIME
+mash	Mash	2.3	runtime CLI; Conda package 2.3	mash			OK_RUNTIME
+ksnp	Shovill	shovill 1.4.2	runtime CLI; Conda package 1.4.2	shovill			OK_RUNTIME
+ksnp	SPAdes	SPAdes genome assembler v3.15.5	runtime CLI; Conda package 3.15.5	spades			OK_RUNTIME
+ksnp	Jellyfish	/tmp/tmp4d8jmat7: line 3: jellyfish: command not found	runtime CLI	jellyfish			OK_RUNTIME
+manual:kSNP4	kSNP4	unreported	executable checksum	manual installation	${KSNP4_HOME}/kSNP4	048e75f17b2fa6d4dd9b9739172d13134d28ddd5614a86c7ed80d2bf16cead24	FOUND_VERSION_UNKNOWN
+manual:kSNP4	Kchooser4	unreported	executable checksum	manual installation	${KSNP4_HOME}/Kchooser4	ca9d873e9531ec29e39af8f73c30251763bd63d90d7decccc1c5834f3f8fbf0c	FOUND_VERSION_UNKNOWN
+manual:kSNP4	FastTreeMP	unreported	executable checksum	manual installation	${KSNP4_HOME}/FastTreeMP	d85b1856abe3d470a8b482f284b6a4e277ec71549d663076399344817f118990	FOUND_VERSION_UNKNOWN
+manual:kSNP4	MUMmer	unreported	executable checksum	manual installation	${KSNP4_HOME}/mummer	c387c7eedbf19efe5a926cb338b5bc50134b6dcd0d574f24ffe439ece598d8e3	FOUND_VERSION_UNKNOWN

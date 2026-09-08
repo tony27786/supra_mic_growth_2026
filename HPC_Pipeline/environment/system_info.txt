@@ -1,0 +1,8 @@
+audit_time=2026-08-22T11:25:47+0800
+host=<redacted>
+uname=Linux <redacted> 5.4.0-100-generic #113-Ubuntu SMP Thu Feb 3 18:43:29 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
+slurm=slurm 22.05.6
+conda=conda 23.9.0
+conda_launcher=${CONDA_BASE_DIR}/condabin/conda
+pipeline_dir=/home/${USER}/working/99_cn_audit
+ksnp4_home=/home/${USER}/kSNP4.1pkg

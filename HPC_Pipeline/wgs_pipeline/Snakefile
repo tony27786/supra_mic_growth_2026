@@ -1,0 +1,225 @@
+import os
+from pathlib import Path
+
+configfile: "config.yaml"
+
+OUTDIR = Path(config["out_dir"])
+VCFDIR = OUTDIR / "vcf"
+FILTDIR = VCFDIR / "filtered"          # filtered VCFs land here (consumed by stage 04)
+LOGDIR = OUTDIR / "logs"
+TMPDIR = OUTDIR / "tmp"
+
+REF_FA = Path(config["ref_fa"])
+MAP_DIR = Path(config["map_dir"])
+
+MIN_MAPQ = int(config.get("min_mapq", 20))
+MIN_BQ = int(config.get("min_bq", 20))
+PLOIDY = int(config.get("ploidy", 1))
+CALL_THREADS = int(config.get("call_threads", 1))
+MAX_DEPTH = int(config.get("max_depth", 250))    # bcftools mpileup -d
+
+QUAL_MIN = float(config.get("qual_min", 30))
+DEPTH_MIN = int(config.get("depth_min", 10))
+MIN_CONTIG_LEN = int(config.get("min_contig_len", 0))
+
+os.makedirs(VCFDIR, exist_ok=True)
+os.makedirs(FILTDIR, exist_ok=True)
+os.makedirs(LOGDIR, exist_ok=True)
+os.makedirs(TMPDIR, exist_ok=True)
+
+
+def discover_samples():
+    if not MAP_DIR.exists():
+        raise FileNotFoundError(f"map_dir not found: {MAP_DIR}")
+
+    samples = []
+    for bam in sorted(MAP_DIR.glob("*.bam")):
+        sample = bam.name[:-4]   # remove .bam
+        bai1 = MAP_DIR / f"{sample}.bam.bai"
+        bai2 = MAP_DIR / f"{sample}.bai"
+        if bai1.exists() or bai2.exists():
+            samples.append(sample)
+
+    if len(samples) == 0:
+        raise ValueError(f"No usable BAM/BAI pairs found under: {MAP_DIR}")
+
+    return samples
+
+
+SAMPLES = discover_samples()
+
+
+def bam_path(sample):
+    bam = MAP_DIR / f"{sample}.bam"
+    if not bam.exists():
+        raise FileNotFoundError(f"Missing BAM: {bam}")
+    return str(bam)
+
+
+def bai_path(sample):
+    bai1 = MAP_DIR / f"{sample}.bam.bai"
+    bai2 = MAP_DIR / f"{sample}.bai"
+    if bai1.exists():
+        return str(bai1)
+    if bai2.exists():
+        return str(bai2)
+    raise FileNotFoundError(f"Missing BAM index for sample: {sample}")
+
+
+# Keep {sample} (and {c}) from greedily matching across the 'filtered/' dir
+# boundary, which would otherwise make concat_per_sample_raw and
+# filter_per_sample_vcf ambiguous for vcf/filtered/{sample}.filtered.vcf.gz.
+wildcard_constraints:
+    sample=r"[^/]+",
+    c=r"[^/]+"
+
+
+rule all:
+    input:
+        expand(str(VCFDIR / "{sample}.vcf.gz"), sample=SAMPLES),
+        expand(str(VCFDIR / "{sample}.vcf.gz.tbi"), sample=SAMPLES),
+        expand(str(FILTDIR / "{sample}.filtered.vcf.gz"), sample=SAMPLES),
+        expand(str(FILTDIR / "{sample}.filtered.vcf.gz.tbi"), sample=SAMPLES)
+
+
+rule ref_fai:
+    input:
+        fa=str(REF_FA)
+    output:
+        fai=str(REF_FA) + ".fai"
+    log:
+        str(LOGDIR / "samtools_faidx.log")
+    shell:
+        r"""
+        set -euo pipefail
+        samtools faidx {input.fa} > /dev/null 2> {log}
+        """
+
+
+checkpoint contigs:
+    input:
+        fai=rules.ref_fai.output.fai
+    output:
+        txt=str(OUTDIR / "contigs.txt")
+    log:
+        str(LOGDIR / "contigs.build.log")
+    run:
+        contigs = []
+        with open(input.fai) as f:
+            for line in f:
+                fields = line.rstrip("\n").split("\t")
+                if len(fields) < 2:
+                    continue
+                name = fields[0]
+                length = int(fields[1])
+                if MIN_CONTIG_LEN and length < MIN_CONTIG_LEN:
+                    continue
+                contigs.append(name)
+
+        if len(contigs) == 0:
+            raise ValueError("No contigs parsed from .fai (check reference index)")
+
+        with open(output.txt, "w") as out:
+            for c in contigs:
+                out.write(c + "\n")
+
+        with open(log[0], "w") as lg:
+            lg.write(f"ref_fai={input.fai}\n")
+            lg.write(f"min_contig_len={MIN_CONTIG_LEN}\n")
+            lg.write(f"n_contigs={len(contigs)}\n")
+
+
+def contig_list(_):
+    ck = checkpoints.contigs.get()
+    with open(ck.output.txt) as f:
+        return [x.strip() for x in f if x.strip()]
+
+
+def contig_vcfs_for_sample(wildcards):
+    cs = contig_list(wildcards)
+    return expand(str(VCFDIR / "contig" / wildcards.sample / "{c}.vcf.gz"), c=cs)
+
+
+rule call_contig_per_sample:
+    input:
+        ref=str(REF_FA),
+        fai=rules.ref_fai.output.fai,
+        bam=lambda wc: bam_path(wc.sample),
+        bai=lambda wc: bai_path(wc.sample),
+        contigs_txt=lambda wc: checkpoints.contigs.get().output.txt
+    output:
+        vcf=str(VCFDIR / "contig" / "{sample}" / "{c}.vcf.gz"),
+        tbi=str(VCFDIR / "contig" / "{sample}" / "{c}.vcf.gz.tbi")
+    threads: CALL_THREADS
+    log:
+        str(LOGDIR / "call_contig" / "{sample}.{c}.log")
+    params:
+        c=lambda wc: wc.c
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {VCFDIR}/contig/{wildcards.sample} {LOGDIR}/call_contig
+
+        bcftools mpileup \
+          -f {input.ref} \
+          -r {params.c} \
+          -q {MIN_MAPQ} \
+          -Q {MIN_BQ} \
+          -d {MAX_DEPTH} \
+          -a FORMAT/DP,FORMAT/AD \
+          -Ou \
+          {input.bam} \
+        | bcftools call \
+            -m \
+            --ploidy {PLOIDY} \
+            --threads {threads} \
+            -Oz -o {output.vcf} \
+          2> {log}
+
+        bcftools index -t {output.vcf} 2>> {log}
+        """
+
+
+rule concat_per_sample_raw:
+    input:
+        vcfs=contig_vcfs_for_sample
+    output:
+        vcf=str(VCFDIR / "{sample}.vcf.gz"),
+        tbi=str(VCFDIR / "{sample}.vcf.gz.tbi")
+    log:
+        str(LOGDIR / "concat" / "{sample}.concat.log")
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {LOGDIR}/concat
+
+        bcftools concat \
+          -Oz -o {output.vcf} \
+          {input.vcfs} \
+          2> {log}
+
+        bcftools index -t {output.vcf} 2>> {log}
+        """
+
+
+rule filter_per_sample_vcf:
+    input:
+        vcf=rules.concat_per_sample_raw.output.vcf
+    output:
+        vcf=str(FILTDIR / "{sample}.filtered.vcf.gz"),
+        tbi=str(FILTDIR / "{sample}.filtered.vcf.gz.tbi")
+    log:
+        str(LOGDIR / "filter" / "{sample}.filter.log")
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {FILTDIR} {LOGDIR}/filter
+
+        bcftools filter \
+          -e "QUAL<{QUAL_MIN} || FORMAT/DP<{DEPTH_MIN}" \
+          {input.vcf} \
+          -Oz -o {output.vcf} \
+          2> {log}
+
+        bcftools index -t {output.vcf} 2>> {log}
+        """
