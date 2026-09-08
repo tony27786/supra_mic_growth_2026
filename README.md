@@ -1,6 +1,6 @@
 # supra_mic_growth_2026
 
-This repository is provided exclusively for peer review under manuscript submission number `placeholder`.
+This repository is provided exclusively for peer review under manuscript submission.
 
 
 
