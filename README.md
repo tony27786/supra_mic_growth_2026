@@ -1,8 +1,10 @@
 # supra_mic_growth_2026
 
-This repository is provided exclusively for peer review under manuscript submission.
+**This repository is provided exclusively for peer review under manuscript submission.**
 
-
+This repository holds everything needed to (1) redraw every panel of Figures 1–6
+from the deposited source data, and (2) regenerate that source data from the raw
+reads in SRA.
 
 # 1. Repository Structure
 
@@ -33,12 +35,22 @@ This repository is provided exclusively for peer review under manuscript submiss
 │   ├── fig4_submit.R
 │   ├── fig5_submit.R
 │   └── fig6_submit.R
-└── HPC_Pipeline/                           ← HPC Pipelines
+└── HPC_Pipeline/                           ← See the README.md in this folder for details.
 ```
 
 [1] PAP results obtained from forked diskimageR repository  [![diskImageR GitHub Repository](https://img.shields.io/badge/GitHub-diskImageR-24292f?logo=github&logoColor=white)](https://github.com/tony27786/diskImageR)
 
-# 2. Descriptions
+# 2. Quick start to reproduce the figures
+
+```bash
+git clone {{REPO_URL}}
+cd <repo>
+git lfs pull                 # one large table is stored with Git LFS
+cd Plot_Codes
+Rscript fig1_submit.R        # then fig2 … fig6
+```
+
+# 3. Descriptions
 
 1. The analyses were performed on high-performance computing (HPC) clusters. Detailed system information is provided below:
 
@@ -50,4 +62,7 @@ This repository is provided exclusively for peer review under manuscript submiss
    Scheduler: slurm 22.05.6
    ```
 
-2. HPC pipelines contains two part.
+2. `SourceData/smallvar_4state_long.tsv` is ~883 MB and is tracked with [Git LFS](https://git-lfs.com). Install it before cloning, or run `git lfs pull`
+   afterwards. Without it the file arrives as a small pointer stub and `fig5_submit.R` will fail while reading it.
+
+3. The disk-diffusion and population-analysis plates were quantified in Fiji/ImageJ driven by a fork of [`diskImageR`](https://github.com/tony27786/diskImageR) that adds six-well plate cropping, a fixed-ROI reader and the PAP wrappers used here. The fork descends from [acgerstein/diskImageR](https://github.com/acgerstein/diskImageR).
