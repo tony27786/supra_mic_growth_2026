@@ -32,7 +32,7 @@ Plate photographs[1]
 
 [1] image_analysis codes will provide later.
 
-**Note: **Reference for every step: NCBI RefSeq **GCF_000149245.1** — *Cryptococcus neoformans* var. *grubii* H99, assembly CNA3. WGS and RNA-seq share this one coordinate system.
+**Note:** Reference for every step: NCBI RefSeq **GCF_000149245.1** — *Cryptococcus neoformans* var. *grubii* H99, assembly CNA3. WGS and RNA-seq share this one coordinate system.
 
 # 2. Which script writes which intermediate file
 
