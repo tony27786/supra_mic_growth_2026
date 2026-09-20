@@ -93,7 +93,7 @@ export OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 ts(){ date '+%F %T'; }
 
 # ---- FIFO semaphore ----------------------------------------------------------
-SEM_FIFO=""; exec 3>&- 2>/dev/null || true
+SEM_FIFO=""; { exec 3>&- 3<&-; } 2>/dev/null || true
 sem_init(){
   local n="$1"
   [[ -n "$SEM_FIFO" ]] && exec 3>&- 3<&- 2>/dev/null || true
