@@ -57,7 +57,6 @@ for i in 1 2 3 4 5 6; do Rscript fig${i}_submit.R; done
 
    ```shell
    OS: CentOS Linux 7 (Core)
-   Kernel: Linux 5.4.0-100-generic
    Architecture: x86_64
    CPU: Intel(R) Xeon(R) Gold 6240R CPU @ 2.40GHz
    Scheduler: slurm 22.05.6
