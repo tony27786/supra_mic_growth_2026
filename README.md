@@ -1,6 +1,6 @@
 # supra_mic_growth_2026
 
-**This repository is provided exclusively for peer review under manuscript submission.**
+**This repository accompanies a manuscript currently under peer review.**
 
 This repository holds everything needed to (1) redraw every panel of Figures 1–6
 from the deposited source data, and (2) regenerate that source data from the raw
@@ -43,11 +43,12 @@ reads in SRA.
 # 2. Quick start to reproduce the figures
 
 ```bash
-git clone {{REPO_URL}}
-cd <repo>
+git clone https://github.com/tony27786/supra_mic_growth_2026.git
+cd supra_mic_growth_2026
 git lfs pull                 # one large table is stored with Git LFS
 cd Plot_Codes
-Rscript fig1_submit.R        # then fig2 … fig6
+# Run in order: fig5 reads DE tables that fig3 and fig4 write to Derived/
+for i in 1 2 3 4 5 6; do Rscript fig${i}_submit.R; done
 ```
 
 # 3. Descriptions
