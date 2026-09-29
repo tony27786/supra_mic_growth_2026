@@ -24,13 +24,11 @@ SRA (RNA-seq, 60 runs)
        cn_rnaseq.slurm        fastp → STAR → featureCounts
          └──────────────────────────────────► SourceData/gene_counts.txt
          
-Plate photographs[1]
-  └─ image_analysis/          Using our forked diskimageR
-       run_pap_analysis.R
+Cropped six-well PAP plate images
+  └─ image_analysis/          local workstation, Fiji + our diskImageR fork
+       run_pap_analysis.R     PAPArea (fixed six-well ROIs)
          └──────────────────────────────────► SourceData/*_pap_feature_results.csv
 ```
-
-[1] image_analysis codes will provide later.
 
 **Note:** Reference for every step: NCBI RefSeq **GCF_000149245.1** — *Cryptococcus neoformans* var. *grubii* H99, assembly CNA3. WGS and RNA-seq share this one coordinate system.
 
@@ -47,9 +45,7 @@ Plate photographs[1]
 | `tree.core_SNPs.ML.tre`                                      | `wgs_pipeline/cn_ksnp4.slurm` → `ksnp4_out/` |
 | `Cn_all_merged_results.txt`                                  | `wgs_pipeline/cn_mlst.slurm`                 |
 | `gene_counts.txt`                                            | `rna_pipeline/cn_rnaseq.slurm`               |
-| `{parent,monoclonal,selected,passage}_pap_feature_results.csv` | `image_analysis/run_pap_analysis.R`[1]       |
-
-[1] image_analysis codes will provide later.
+| `{parent,monoclonal,selected,passage}_pap_feature_results.csv` | `image_analysis/run_pap_analysis.R`          |
 
 # 3. Structure in this folder
 
@@ -87,8 +83,8 @@ HPC_Pipeline/
 │   ├── cn_rnaseq.slurm           fastp → STAR → featureCounts
 │   └── make_sample_tsv.sh        build samples.tsv from a FASTQ directory
 ├── image_analysis/
-│   ├── run_pap_analysis.R        Fiji + diskImageR → PAP feature tables [1]
-│   └── run_kb_analysis.R         Fiji + diskImageR → disk-diffusion RAD/FoG [1]
+│   ├── run_pap_analysis.R        Fiji + diskImageR → PAP feature tables
+│   └── pap_roiset.zip            fixed six-well ROI template (TL, TM, TR, BL, BM, BR)
 └── environment/
     ├── software_versions.tsv     frozen tool versions
     ├── system_info.txt           kernel, SLURM and conda versions
@@ -96,10 +92,10 @@ HPC_Pipeline/
     └── conda_{lists,history,explicit}/    per-environment package manifests
 ```
 
-[1] image_analysis codes will provide later.
-
 # 4. Descriptions
 
-1. The codes in `image_analysis` folder will be provided later.
-2. Several steps are computationally intensive and require substantial memory, regeneration from the raw sequencing data is intended to be performed on high-performance computing (HPC) systems.
-3. Our HPC systems are scheduled using Slurm. Details can be found in the `environment` folder.
+1. `image_analysis/` runs on a desktop (macOS or Windows) with Fiji and our diskImageR fork, not on the cluster. Install the latest fork with `pak::pak("tony27786/diskImageR")`; the deposited tables were reproduced with ImageJ 1.54p and R 4.6.0.
+2. The cropped plate images are available from the corresponding author on request. Put them in `parent/`, `monoclonal/`, `selected/` and `passage/` under one folder, then run `PAP_CROP_DIR=/path/to/folder Rscript run_pap_analysis.R`.
+3. The script does not modify `SourceData/`; it only reports whether each regenerated table matches the deposited one.
+4. Several steps are computationally intensive and require substantial memory, regeneration from the raw sequencing data is intended to be performed on high-performance computing (HPC) systems.
+5. Our HPC systems are scheduled using Slurm. Details can be found in the `environment` folder.
