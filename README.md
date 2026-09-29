@@ -66,3 +66,7 @@ for i in 1 2 3 4 5 6; do Rscript fig${i}_submit.R; done
    afterwards. Without it the file arrives as a small pointer stub and `fig5_submit.R` will fail while reading it.
 
 3. The disk-diffusion and population-analysis plates were quantified in Fiji/ImageJ driven by a fork of [`diskImageR`](https://github.com/tony27786/diskImageR) that adds six-well plate cropping, a fixed-ROI reader and the PAP wrappers used here. The fork descends from [acgerstein/diskImageR](https://github.com/acgerstein/diskImageR).
+   
+4. Figure scripts should be run in numerical order. `fig3_submit.R` and `fig4_submit.R` generate differential-expression and phenotype tables in `Derived/` (`fig3_DE_batch01_vs_02.csv`, `fig4_DE_batch03_vs_01.csv` and `fig4_master_out.csv`), which are subsequently read by `fig5_submit.R`. Running `fig5_submit.R` before these upstream scripts will therefore result in a missing-file error.
+
+5. Figures 1, 2 and 6 depend only on files in `SourceData/` and can be generated independently. Each figure script writes its output panels as PDF files to the corresponding `FigureN_panels/` directory in the repository root.
