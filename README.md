@@ -35,6 +35,8 @@ reads in SRA.
 │   ├── fig4_submit.R
 │   ├── fig5_submit.R
 │   └── fig6_submit.R
+├── Derived/                               (created by fig3–fig5; intermediate DE and phenotype tables)
+├── Figure1_panels/ … Figure6_panels/      (created by the figure scripts)
 └── HPC_Pipeline/                           ← See the README.md in this folder for details.
 ```
 
